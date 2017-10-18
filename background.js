@@ -51,16 +51,16 @@ browser.webRequest.onHeadersReceived.addListener(pushNoJsHeader,
 	["blocking", "responseHeaders"]
 );
 
-browser.tabs.onUpdated.addListener((id, changeInfo) => {
-	if (changeInfo.url) {
-		let host = getHost(changeInfo.url);
+browser.tabs.onUpdated.addListener((id, inf) => {
+	if (inf.url && !inf.url.startsWith('moz-extension') && !inf.url.startsWith('about')) {
+		let host = getHost(inf.url);
 		getStorage().get(host).then(item => {
 			let blocked = isBlock(item, host);
 			browser.pageAction.setIcon({tabId: id, path: blocked ? "js_off.svg" : "js_on.svg"});
 			browser.pageAction.setTitle({tabId: id, title: 'Javascript ' + (blocked ? 'Disabled' : 'Enabled')});
 		});
+		browser.pageAction.show(id);
 	}
-	browser.pageAction.show(id);
 });
 
 browser.pageAction.onClicked.addListener(function (tab) {
